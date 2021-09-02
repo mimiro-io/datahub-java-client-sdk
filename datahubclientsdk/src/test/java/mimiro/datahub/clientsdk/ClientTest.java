@@ -4,12 +4,142 @@
 package mimiro.datahub.clientsdk;
 
 import org.junit.Test;
+
+import javax.xml.crypto.Data;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.Assert.*;
 
 public class ClientTest {
+
     @Test
     public void testCreateClient() {
         DatahubClient client = new DatahubClient();
         assertNotNull("client should not be null", client);
+    }
+
+    @Test
+    public void testParseNoEntities(){
+        final String data = """
+                [ 
+                    {
+                        "id" : "@context",
+                        "namespaces" : {
+                            "mimiro" : "http://data.mimiro.io/core/"
+                        } 
+                   },
+                   { 
+                        "id" : "@continuation", 
+                        "token" : "next-20" 
+                   }
+                ]
+                """;
+
+        InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+
+        EntityStreamParser parser = new EntityStreamParser();
+        EntityCollection entityCollection = parser.parseData(stream);
+        assertNotNull("entitycollection must not be null", entityCollection);
+
+        // check context
+        assertNotNull("context must not be null", entityCollection.getContext());
+        assertEquals("mimiro namespace is missing", "http://data.mimiro.io/core/", entityCollection.getContext().getExpansionForPrefix("mimiro"));
+
+        // check continuation
+        assertNotNull("continuation token must not be null", entityCollection.getContinuationToken());
+        assertEquals("continuation token does not match expected value", "next-20", entityCollection.getContinuationToken());
+    }
+
+    @Test
+    public void testParseEntities(){
+        final String data = """
+                [ 
+                   {
+                        "id" : "@context",
+                        "namespaces" : {
+                            "_" : "http://data.mimiro.io/core/",
+                            "mimiro" : "http://data.mimiro.io/core/"
+                        } 
+                   },
+                   {
+                        "id" : "mimiro:e1",
+                        "props" : {
+                            "name" : "entity1",
+                            "aliases" : [ "e1", "eone" ],
+                            "place" : {
+                                "props" : {
+                                    "addressline1" : "mars"    
+                                }
+                            }
+                        },
+                        "refs" : {
+                            "topics" : [ "mimiro:t1", "mimiro:t2" ],
+                            "country" : "mimiro:country1"
+                        }                         
+                   },
+                   { 
+                        "id" : "@continuation", 
+                        "token" : "next-20" 
+                   }
+                ]
+                """;
+
+        InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+
+        EntityStreamParser parser = new EntityStreamParser();
+        EntityCollection entityCollection = parser.parseData(stream);
+        assertNotNull("entitycollection must not be null", entityCollection);
+
+        // check context
+        assertNotNull("context must not be null", entityCollection.getContext());
+        assertEquals("mimiro namespace is missing", "http://data.mimiro.io/core/", entityCollection.getContext().getExpansionForPrefix("mimiro"));
+
+        // check continuation
+        assertNotNull("continuation token must not be null", entityCollection.getContinuationToken());
+        assertEquals("continuation token does not match expected value", "next-20", entityCollection.getContinuationToken());
+
+        // check entities
+        assertEquals("one entity expected", 1, entityCollection.getEntities().size());
+
+        var entity = entityCollection.getEntities().stream().findFirst().get();
+
+        assertEquals("three properties expected", 3, entity.getProperties().size());
+        assertEquals("two references expected", 2, entity.getReferences().size());
+    }
+
+    // Uncomment the test and add real values to the params for the datahubclient to test
+    // @Test
+    public void testClient() {
+        var apiEndpoint = "API_ENDPOINT";
+        var authEndpoint = "AUTH_ENDPOINT";
+        var clientId = "CLIENT_ID";
+        var clientSecret = "CLIENT_SECRET";
+        var audience = "AUDIENCE";
+        var grantType = "GRANT_TYPE";
+
+        var client = new DatahubClient(apiEndpoint,
+                                        authEndpoint,
+                                        clientId,
+                                        clientSecret,
+                                        audience,
+                                        grantType);
+
+        try {
+            var datasetName = "DATASET_NAME";
+            var entities = client.getEntities(datasetName, null);
+            var token = entities.getContinuationToken();
+            assertNotNull("token should not be null", token);
+        } catch (ClientException e) {
+            assertTrue("unexpected exception", true);
+        }
+
+        try {
+            var datasets = client.getDatasets();
+            assertNotNull("token should not be null", datasets);
+        } catch (ClientException e) {
+            assertTrue("unexpected exception", true);
+        }
     }
 }
