@@ -143,10 +143,29 @@ public class DatahubClient {
 
         var entitiesUrl = apiEndpoint + "/datasets/" + datasetName + "/entities";
         if (continuationToken != null) {
-            entitiesUrl += "?since=" + continuationToken;
+            entitiesUrl += "?from=" + continuationToken;
         }
 
         var request = buildGetRequest(entitiesUrl);
+
+        try {
+            HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            var jsonStream = response.body();
+            return esp.parseData(jsonStream);
+        } catch (IOException | InterruptedException e) {
+            throw new ClientException(e.getMessage());
+        }
+    }
+
+    public EntityCollection getChanges(String datasetName, String continuationToken) throws ClientException {
+        EntityStreamParser esp = new EntityStreamParser();
+
+        var changesUrl = apiEndpoint + "/datasets/" + datasetName + "/changes";
+        if (continuationToken != null) {
+            changesUrl += "?since=" + continuationToken;
+        }
+
+        var request = buildGetRequest(changesUrl);
 
         try {
             HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
