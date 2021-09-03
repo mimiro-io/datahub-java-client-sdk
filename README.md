@@ -49,6 +49,6 @@ The client can then be used to getEntities, getChanges and getDatasets.
         // code to work with the entities returned.
 
     } catch (ClientException e) {
-        assertTrue("unexpected exception", true);
+        // handle client exception
     }
 ```
