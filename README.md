@@ -45,8 +45,9 @@ The client can then be used to getEntities, getChanges and getDatasets.
     try {
         var datasetName = "DATASET_NAME";
         var entities = client.getEntities(datasetName, null);
-        var token = entities.getContinuationToken();
-        assertNotNull("token should not be null", token);
+
+        // code to work with the entities returned.
+
     } catch (ClientException e) {
         assertTrue("unexpected exception", true);
     }
