@@ -1,0 +1,12 @@
+[
+  {
+    "id" : "@context",
+    "namespaces" : {
+      "mimiro" : "http://data.mimiro.io/core/"
+    }
+  },
+  {
+    "id" : "@continuation",
+    "token" : "next-20"
+  }
+]

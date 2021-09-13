@@ -22,22 +22,7 @@ public class ClientTest {
 
     @Test
     public void testParseNoEntities(){
-        final String data = """
-                [ 
-                    {
-                        "id" : "@context",
-                        "namespaces" : {
-                            "mimiro" : "http://data.mimiro.io/core/"
-                        } 
-                   },
-                   { 
-                        "id" : "@continuation", 
-                        "token" : "next-20" 
-                   }
-                ]
-                """;
-
-        InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("testing/testParseNoEntities.json");
 
         EntityStreamParser parser = new EntityStreamParser();
         EntityCollection entityCollection = parser.parseData(stream);
@@ -54,39 +39,7 @@ public class ClientTest {
 
     @Test
     public void testParseEntities(){
-        final String data = """
-                [ 
-                   {
-                        "id" : "@context",
-                        "namespaces" : {
-                            "_" : "http://data.mimiro.io/core/",
-                            "mimiro" : "http://data.mimiro.io/core/"
-                        } 
-                   },
-                   {
-                        "id" : "mimiro:e1",
-                        "props" : {
-                            "name" : "entity1",
-                            "aliases" : [ "e1", "eone" ],
-                            "place" : {
-                                "props" : {
-                                    "addressline1" : "mars"    
-                                }
-                            }
-                        },
-                        "refs" : {
-                            "topics" : [ "mimiro:t1", "mimiro:t2" ],
-                            "country" : "mimiro:country1"
-                        }                         
-                   },
-                   { 
-                        "id" : "@continuation", 
-                        "token" : "next-20" 
-                   }
-                ]
-                """;
-
-        InputStream stream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("testing/testParseEntities.json");
 
         EntityStreamParser parser = new EntityStreamParser();
         EntityCollection entityCollection = parser.parseData(stream);

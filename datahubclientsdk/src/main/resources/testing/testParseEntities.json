@@ -1,0 +1,29 @@
+[
+  {
+    "id" : "@context",
+    "namespaces" : {
+      "_" : "http://data.mimiro.io/core/",
+      "mimiro" : "http://data.mimiro.io/core/"
+    }
+  },
+  {
+    "id" : "mimiro:e1",
+    "props" : {
+      "name" : "entity1",
+      "aliases" : [ "e1", "eone" ],
+      "place" : {
+        "props" : {
+          "addressline1" : "mars"
+        }
+      }
+    },
+    "refs" : {
+      "topics" : [ "mimiro:t1", "mimiro:t2" ],
+      "country" : "mimiro:country1"
+    }
+  },
+  {
+    "id" : "@continuation",
+    "token" : "next-20"
+  }
+]

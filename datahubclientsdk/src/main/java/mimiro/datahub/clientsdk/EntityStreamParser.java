@@ -130,7 +130,8 @@ public class EntityStreamParser {
                 if (references instanceof List) {
                     var listrefs = (List<String>) references;
                     entity.setReferences(key, listrefs);
-                } else if (references instanceof String ref) {
+                } else if (references instanceof String) {
+                    String ref = (String) references;
                     entity.setReference(key, ref);
                 }
             }
