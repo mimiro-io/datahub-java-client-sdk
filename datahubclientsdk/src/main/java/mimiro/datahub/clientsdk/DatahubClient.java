@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -81,7 +83,7 @@ public class DatahubClient {
         if (noAuthentication) {
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
-                    .uri(URI.create(url.replaceAll("\\+", "%2b")))
+                    .uri(URI.create(url))
                     .setHeader("User-Agent", "Datahub Java Client SDK")
                     .build();
             return request;
@@ -89,7 +91,7 @@ public class DatahubClient {
             String token = getToken();
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
-                    .uri(URI.create(url.replaceAll("\\+", "%2b")))
+                    .uri(URI.create(url))
                     .setHeader("Authorization", "Bearer " + token)
                     .build();
             return request;
@@ -143,7 +145,11 @@ public class DatahubClient {
             entitiesUrl += "?";
 
             if (continuationToken != null) {
-                entitiesUrl += "from=" + continuationToken;
+                try {
+                    entitiesUrl += "from=" + URLEncoder.encode(continuationToken, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new ClientException(e.getMessage());
+                }
                 suffix = "&";
             }
             if (limit != null) {
@@ -172,7 +178,11 @@ public class DatahubClient {
             changesUrl += "?";
 
             if (continuationToken != null) {
-                changesUrl += "since=" + continuationToken;
+                try {
+                    changesUrl += "since=" + URLEncoder.encode(continuationToken, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new ClientException(e.getMessage());
+                }
                 suffix = "&";
             }
             if (limit != null) {
