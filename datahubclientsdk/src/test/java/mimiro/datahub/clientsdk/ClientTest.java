@@ -81,8 +81,15 @@ public class ClientTest {
 
         try {
             var datasetName = "DATASET_NAME";
-            var entities = client.getEntities(datasetName, null);
+            var limit = "10";
+            var entities = client.getEntities(datasetName, null, limit);
             var token = entities.getContinuationToken();
+            var prevToken = "";
+            while (!token.equals(prevToken)) {
+                entities = client.getEntities(datasetName, token, limit);
+                prevToken = token;
+                token = entities.getContinuationToken();
+            }
             assertNotNull("token should not be null", token);
         } catch (ClientException e) {
             assertTrue("unexpected exception", true);

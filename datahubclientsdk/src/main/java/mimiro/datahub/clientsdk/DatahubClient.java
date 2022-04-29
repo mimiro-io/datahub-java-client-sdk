@@ -4,10 +4,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import org.checkerframework.checker.units.qual.C;
-
-import javax.xml.crypto.Data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,7 +81,7 @@ public class DatahubClient {
         if (noAuthentication) {
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
-                    .uri(URI.create(url))
+                    .uri(URI.create(url.replaceAll("\\+", "%2b")))
                     .setHeader("User-Agent", "Datahub Java Client SDK")
                     .build();
             return request;
@@ -93,7 +89,7 @@ public class DatahubClient {
             String token = getToken();
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
-                    .uri(URI.create(url))
+                    .uri(URI.create(url.replaceAll("\\+", "%2b")))
                     .setHeader("Authorization", "Bearer " + token)
                     .build();
             return request;
@@ -138,12 +134,22 @@ public class DatahubClient {
         return datasets;
     }
 
-    public EntityCollection getEntities(String datasetName, String continuationToken) throws ClientException {
+    public EntityCollection getEntities(String datasetName, String continuationToken, String limit) throws ClientException{
         EntityStreamParser esp = new EntityStreamParser();
 
         var entitiesUrl = apiEndpoint + "/datasets/" + datasetName + "/entities";
-        if (continuationToken != null) {
-            entitiesUrl += "?from=" + continuationToken;
+        if (continuationToken != null || limit != null) {
+            String suffix = "";
+            entitiesUrl += "?";
+
+            if (continuationToken != null) {
+                entitiesUrl += "from=" + continuationToken;
+                suffix = "&";
+            }
+            if (limit != null) {
+                entitiesUrl += suffix + "limit=" + limit;
+            }
+
         }
 
         var request = buildGetRequest(entitiesUrl);
@@ -157,12 +163,21 @@ public class DatahubClient {
         }
     }
 
-    public EntityCollection getChanges(String datasetName, String continuationToken) throws ClientException {
+    public EntityCollection getChanges(String datasetName, String continuationToken, String limit) throws ClientException{
         EntityStreamParser esp = new EntityStreamParser();
 
         var changesUrl = apiEndpoint + "/datasets/" + datasetName + "/changes";
-        if (continuationToken != null) {
-            changesUrl += "?since=" + continuationToken;
+        if (continuationToken != null || limit != null) {
+            String suffix = "";
+            changesUrl += "?";
+
+            if (continuationToken != null) {
+                changesUrl += "since=" + continuationToken;
+                suffix = "&";
+            }
+            if (limit != null) {
+                changesUrl += suffix + "limit=" + limit;
+            }
         }
 
         var request = buildGetRequest(changesUrl);
