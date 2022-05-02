@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import org.checkerframework.checker.units.qual.C;
-
-import javax.xml.crypto.Data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -138,12 +136,26 @@ public class DatahubClient {
         return datasets;
     }
 
-    public EntityCollection getEntities(String datasetName, String continuationToken) throws ClientException {
+    public EntityCollection getEntities(String datasetName, String continuationToken, String limit) throws ClientException{
         EntityStreamParser esp = new EntityStreamParser();
 
         var entitiesUrl = apiEndpoint + "/datasets/" + datasetName + "/entities";
-        if (continuationToken != null) {
-            entitiesUrl += "?from=" + continuationToken;
+        if (continuationToken != null || limit != null) {
+            String suffix = "";
+            entitiesUrl += "?";
+
+            if (continuationToken != null) {
+                try {
+                    entitiesUrl += "from=" + URLEncoder.encode(continuationToken, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new ClientException(e.getMessage());
+                }
+                suffix = "&";
+            }
+            if (limit != null) {
+                entitiesUrl += suffix + "limit=" + limit;
+            }
+
         }
 
         var request = buildGetRequest(entitiesUrl);
@@ -157,12 +169,25 @@ public class DatahubClient {
         }
     }
 
-    public EntityCollection getChanges(String datasetName, String continuationToken) throws ClientException {
+    public EntityCollection getChanges(String datasetName, String continuationToken, String limit) throws ClientException{
         EntityStreamParser esp = new EntityStreamParser();
 
         var changesUrl = apiEndpoint + "/datasets/" + datasetName + "/changes";
-        if (continuationToken != null) {
-            changesUrl += "?since=" + continuationToken;
+        if (continuationToken != null || limit != null) {
+            String suffix = "";
+            changesUrl += "?";
+
+            if (continuationToken != null) {
+                try {
+                    changesUrl += "since=" + URLEncoder.encode(continuationToken, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new ClientException(e.getMessage());
+                }
+                suffix = "&";
+            }
+            if (limit != null) {
+                changesUrl += suffix + "limit=" + limit;
+            }
         }
 
         var request = buildGetRequest(changesUrl);
