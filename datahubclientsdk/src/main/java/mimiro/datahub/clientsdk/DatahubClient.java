@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class DatahubClient {
@@ -47,13 +48,13 @@ public class DatahubClient {
     }
 
     private String makeTokenRequestPayload() {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode user = mapper.createObjectNode();
-        user.put("client_id", clientId);
-        user.put("client_secret", clientSecret);
-        user.put("audience", audience);
-        user.put("grant_type", grantType);
-        return user.toString();
+        return  "audience=" + URLEncoder.encode(audience, StandardCharsets.UTF_8) +
+                "&grant_type=" + URLEncoder.encode(grantType, StandardCharsets.UTF_8);
+    }
+
+    private String makeBasicAuthenticationHeader() {
+        String userPass = clientId + ":" + clientSecret;
+        return "Basic " + Base64.getEncoder().encodeToString(userPass.getBytes());
     }
 
     private String getToken() throws ClientException {
@@ -65,6 +66,8 @@ public class DatahubClient {
                 .POST(HttpRequest.BodyPublishers.ofString(makeTokenRequestPayload()))
                 .uri(URI.create(authEndpoint))
                 .setHeader("User-Agent", "Datahub Java Client SDK")
+                .setHeader("Authorization", makeBasicAuthenticationHeader())
+                .setHeader("Content-Type", "application/x-www-form-urlencoded")
                 .build();
 
         try {
